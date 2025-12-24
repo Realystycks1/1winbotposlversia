@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>1WIN SIGNALS FINAL V7</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --bg-dark: #0f192b;
+        --panel-bg: #1c283d;
+        --blue-1win: #0099ff;
+        --pink-1win: #f53b7b;
+        --text-white: #ffffff;
+        --text-gray: #8e9aab;
+        --radius: 20px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+    ::-webkit-scrollbar { display: none; }
+    body { -ms-overflow-style: none; scrollbar-width: none; background-color: var(--bg-dark); font-family: 'Montserrat', sans-serif; color: var(--text-white); height: 100vh; overflow: hidden; display: flex; flex-direction: column; align-items: center; position: relative; }
+
+    /* ФОН */
+    .bg-logos {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='50' viewBox='0 0 100 50'%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-weight='900' font-style='italic' font-size='20' fill='rgba(255,255,255,0.03)' text-anchor='middle' dominant-baseline='middle'%3E1WIN%3C/text%3E%3C/svg%3E");
+        background-size: 100px 50px; background-repeat: repeat;
+    }
+
+    /* HEADER */
+    .header {
+        width: 100%; max-width: 500px; padding: 15px 20px; display: flex; justify-content: center; align-items: center;
+        z-index: 10; background: rgba(15, 25, 43, 0.95); backdrop-filter: blur(10px); flex-shrink: 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .logo { font-weight: 900; font-style: italic; font-size: 24px; letter-spacing: -1px; }
+    .logo span { color: var(--blue-1win); }
+
+    /* SCREENS */
+    .screens-container { width: 100%; flex: 1; overflow-y: auto; padding-bottom: 100px; display: flex; flex-direction: column; align-items: center; }
+    .screen { width: 100%; max-width: 500px; padding: 0 20px; display: none; animation: fadeUp 0.3s ease-out; }
+    .screen.active { display: block; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ВВОД ID */
+    .id-section {
+        background: rgba(15, 25, 43, 0.8);
+        border: 1px solid var(--blue-1win);
+        border-radius: 15px;
+        padding: 15px;
+        margin-top: 15px;
+        margin-bottom: 15px;
+    }
+    .id-label {
+        font-size: 12px; color: var(--blue-1win); font-weight: 700; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;
+    }
+    .id-input {
+        width: 100%; padding: 14px;
+        background: rgba(0,0,0,0.3);
+        border: 2px solid #333;
+        border-radius: 12px;
+        color: white; font-size: 20px; font-family: monospace; text-align: center;
+        outline: none; transition: 0.3s;
+    }
+    .id-input:focus { border-color: var(--blue-1win); box-shadow: 0 0 10px rgba(0, 153, 255, 0.2); }
+    .id-input.error { border-color: var(--pink-1win); animation: shake 0.3s; }
+    @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+    /* КНОПКА СМЕНЫ ID */
+    .change-id-btn {
+        background: transparent; border: 1px solid var(--text-gray); color: var(--text-gray);
+        font-size: 10px; padding: 4px 8px; border-radius: 6px; margin-left: 10px;
+        cursor: pointer; font-family: 'Montserrat', sans-serif; text-transform: uppercase;
+    }
+    .change-id-btn:active { background: rgba(255,255,255,0.1); }
+
+    /* МОДАЛЬНОЕ ОКНО (CUSTOM CONFIRM) */
+    .modal-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.8); z-index: 200;
+        display: none; align-items: center; justify-content: center;
+        backdrop-filter: blur(5px);
+        animation: fadeIn 0.2s;
+    }
+    .modal-box {
+        width: 85%; max-width: 320px;
+        background: var(--panel-bg);
+        border: 1px solid var(--blue-1win);
+        border-radius: 20px;
+        padding: 25px;
+        text-align: center;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        transform: scale(0.9);
+        animation: popIn 0.2s forwards;
+    }
+    .modal-title { font-size: 18px; font-weight: 900; color: white; margin-bottom: 10px; }
+    .modal-desc { font-size: 13px; color: var(--text-gray); margin-bottom: 20px; line-height: 1.5; }
+    .modal-actions { display: flex; gap: 10px; }
+    .modal-btn {
+        flex: 1; padding: 12px; border-radius: 10px; border: none;
+        font-weight: 700; font-size: 13px; cursor: pointer;
+    }
+    .btn-cancel { background: rgba(255,255,255,0.1); color: white; }
+    .btn-confirm { background: var(--pink-1win); color: white; }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+    /* CARDS */
+    .games-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
+    .game-card {
+        background: var(--panel-bg); border-radius: var(--radius); padding: 15px;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        height: 130px; border: 1px solid rgba(255,255,255,0.05); cursor: pointer;
+        transition: transform 0.1s, border-color 0.2s; position: relative; overflow: hidden;
+    }
+    .game-card:active { transform: scale(0.96); background: rgba(255,255,255,0.05); }
+    .g-icon { font-size: 36px; margin-bottom: 8px; z-index: 2; }
+    .g-title { font-weight: 700; font-size: 11px; text-transform: uppercase; z-index: 2; text-align: center; }
+
+    /* GAME UI */
+    .game-ui { background: var(--panel-bg); border-radius: 25px; padding: 20px; margin-top: 15px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+    
+    .main-btn {
+        background: linear-gradient(90deg, #0099ff, #0066cc); color: white; border: none;
+        width: 100%; padding: 16px; border-radius: 15px; font-weight: 800; font-size: 16px;
+        text-transform: uppercase; margin-top: 10px; cursor: pointer;
+        box-shadow: 0 5px 20px rgba(0, 153, 255, 0.4); transition: 0.2s;
+    }
+    .main-btn:disabled { display: none; }
+    .main-btn:active:not(:disabled) { transform: scale(0.98); opacity: 0.9; }
+
+    /* LOADER */
+    .loader-container { display: none; justify-content: center; align-items: center; margin-top: 20px; height: 50px; }
+    .spinner { width: 30px; height: 30px; border: 3px solid rgba(255, 255, 255, 0.1); border-left-color: var(--blue-1win); border-radius: 50%; animation: spin 1s linear infinite; }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+    .status-text { text-align: center; font-size: 12px; color: var(--text-gray); margin-top: 15px; height: 20px; font-family: monospace; }
+
+    /* MINES */
+    .mines-options { display: flex; gap: 5px; margin-bottom: 15px; background: #0f192b; padding: 5px; border-radius: 12px; }
+    .mine-btn { flex: 1; background: transparent; border: none; color: var(--text-gray); padding: 8px; font-weight: 700; border-radius: 8px; cursor: pointer; transition: 0.2s; font-size: 14px; }
+    .mine-btn.active { background: var(--blue-1win); color: white; }
+    .mines-wrapper { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; background: #0b1221; padding: 8px; border-radius: 15px; }
+    .mine-cell { aspect-ratio: 1; background: #152033; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
+    .mine-cell.safe { background: linear-gradient(135deg, #1c283d, #1c283d); border: 2px solid #f59e0b; box-shadow: 0 0 10px rgba(245, 158, 11, 0.4); }
+    .star-icon { font-size: 20px; animation: popStar 0.4s; }
+
+    /* TOWER RUSH */
+    .tower-wrapper {
+        height: 420px;
+        background: linear-gradient(to bottom, #0f2027, #203a43, #2c5364);
+        border: 2px solid #333; border-radius: 15px; position: relative; overflow: hidden;
+        display: flex; flex-direction: column-reverse; align-items: center; padding-bottom: 0px;
+    }
+    .tower-ground { width: 100%; height: 10px; background: #1a1a1a; border-top: 2px solid #444; z-index: 10; flex-shrink: 0; }
+    .tower-floor { width: 140px; height: 70px; position: relative; z-index: 1; animation: dropFloor 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+    .windows { position: absolute; top: 10px; left: 10px; right: 10px; bottom: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .win { background: #444; border-radius: 2px; width: 100%; height: 100%; }
+    .win.lit { background: #f1c40f; box-shadow: 0 0 8px #f1c40f; }
+    .style-concrete { background: #7f8c8d; border-left: 5px solid #95a5a6; border-right: 5px solid #34495e; border-top: 2px solid #bdc3c7; }
+    .style-brick { background: #c0392b; border-left: 5px solid #e74c3c; border-right: 5px solid #922b21; border-top: 2px solid #d98880; }
+    .style-tech { background: #2980b9; border-left: 5px solid #3498db; border-right: 5px solid #1a5276; border-top: 2px solid #5dade2; }
+    .tower-roof { width: 150px; height: 35px; background: #2c3e50; border-radius: 10px 10px 0 0; margin-bottom: -5px; z-index: 2; position: relative; animation: dropFloor 0.3s ease-out; }
+    .tower-roof::after { content: ''; position: absolute; top: -20px; left: 50%; transform: translateX(-50%); width: 4px; height: 20px; background: red; border-radius: 2px; }
+    .tower-result { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); font-size: 56px; font-weight: 900; color: white; text-shadow: 0 0 20px rgba(0,0,0,0.8); z-index: 20; display: none; }
+
+    /* Lucky Jet */
+    .lucky-wrapper { height: 200px; background: #0b0b15; border-radius: 15px; position: relative; overflow: hidden; border: 1px solid #333; display: flex; align-items: center; justify-content: center; }
+    .star-field { position: absolute; width: 100%; height: 200%; top: -100%; left: 0; background-image: radial-gradient(2px 2px at 20px 30px, #fff, rgba(0,0,0,0)), radial-gradient(2px 2px at 40px 70px, #fff, rgba(0,0,0,0)); background-repeat: repeat; background-size: 200px 200px; animation: flyStars 3s linear infinite; opacity: 0.5; }
+    .jet-container { position: absolute; bottom: 20px; left: 20px; display: flex; align-items: center; transition: all 0.5s linear; z-index: 5; }
+    .joe { font-size: 40px; z-index: 2; transform: rotate(-5deg); }
+    .jet-trail { position: absolute; left: -15px; bottom: 5px; width: 40px; height: 10px; background: linear-gradient(90deg, transparent, #ff5500, #ffcc00); filter: blur(4px); transform-origin: right; animation: trailPulse 0.2s infinite alternate; z-index: 1; border-radius: 50%; }
+    .multiplier { position: absolute; z-index: 10; font-size: 42px; font-weight: 900; color: white; }
+
+    /* Penalty & Coin */
+    .penalty-wrapper { position: relative; height: 220px; background: linear-gradient(to bottom, #2b5624, #3a7530); border: 3px solid rgba(255,255,255,0.8); border-bottom: none; border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
+    .net { position: absolute; top: 5px; left: 5px; right: 5px; bottom: 0; border: 1px solid rgba(255,255,255,0.3); border-bottom: none; background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.1) 0, rgba(255,255,255,0.1) 1px, transparent 0, transparent 15px), repeating-linear-gradient(-45deg, rgba(255,255,255,0.1) 0, rgba(255,255,255,0.1) 1px, transparent 0, transparent 15px); }
+    .penalty-grid { position: absolute; top: 10px; left: 10px; right: 10px; bottom: 0; display: grid; grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(3, 1fr); gap: 4px; }
+    .p-cell { border: 1px dashed rgba(255,255,255,0.1); border-radius: 4px; display: flex; align-items: center; justify-content: center; }
+    .ball { width: 30px; height: 30px; background: white; border-radius: 50%; box-shadow: 0 5px 15px rgba(0,0,0,0.5); animation: ballHit 0.5s; background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="white"/><path d="M50 2 A48 48 0 0 1 50 98" fill="rgba(0,0,0,0.1)"/><circle cx="50" cy="50" r="40" fill="none" stroke="black" stroke-width="5"/></svg>'); }
+    
+    .coin-scene { height: 200px; perspective: 1000px; display: flex; align-items: center; justify-content: center; }
+    .coin { width: 150px; height: 150px; position: relative; transform-style: preserve-3d; transform: rotateY(0deg); }
+    .side { position: absolute; width: 100%; height: 100%; border-radius: 50%; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; border: 6px solid #fbbf24; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+    .heads { background: #104e8b; transform: rotateY(0deg); flex-direction: column; }
+    .tails { background: radial-gradient(circle, #fcd34d, #d97706); transform: rotateY(180deg); color: #78350f; font-size: 60px; font-weight: 900; }
+    .coin-text { font-style: italic; font-weight: 900; font-size: 26px; }
+
+    /* INSTRUCTIONS & NAV */
+    .guide-box { background: var(--panel-bg); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 20px; margin-bottom: 15px; }
+    .code-bg { 
+        background: rgba(245, 59, 123, 0.15); padding: 25px; border-radius: 15px; border: 2px dashed var(--pink-1win); 
+        color: var(--pink-1win); font-family: monospace; font-size: 32px; font-weight: 900; text-align: center; margin: 15px 0; letter-spacing: 3px; text-shadow: 0 0 10px rgba(245, 59, 123, 0.4);
+    }
+    .nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(28, 40, 61, 0.95); backdrop-filter: blur(15px); padding: 10px 20px; border-radius: 30px; display: flex; gap: 20px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 100; width: 90%; max-width: 400px; justify-content: space-between; }
+    .nav-item { color: var(--text-gray); font-size: 9px; font-weight: 700; display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: 0.3s; flex: 1; }
+    .nav-item svg { width: 22px; height: 22px; margin-bottom: 5px; stroke-width: 2; }
+    .nav-item.active { color: var(--blue-1win); }
+    .nav-item.active svg { stroke: var(--blue-1win); filter: drop-shadow(0 0 5px var(--blue-1win)); }
+
+    @keyframes popStar { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+    @keyframes dropFloor { from { transform: translateY(-100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    @keyframes flyStars { 0% { transform: translateY(0); } 100% { transform: translateY(50%); } }
+    @keyframes trailPulse { 0% { transform: scaleX(0.8); opacity: 0.7; } 100% { transform: scaleX(1.2); opacity: 1; } }
+    @keyframes ballHit { 0% { transform: scale(3); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+</style>
+</head>
+<body>
+
+<div class="bg-logos"></div>
+
+<div class="header">
+    <div class="logo">1WIN <span>SIGNALS</span></div>
+</div>
+
+<!-- МОДАЛЬНОЕ ОКНО ДЛЯ СМЕНЫ ID -->
+<div id="confirm-modal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-title">СМЕНА ID</div>
+        <p class="modal-desc">Вы уверены, что хотите выйти? <br>Текущий ID будет сброшен.</p>
+        <div class="modal-actions">
+            <button class="modal-btn btn-cancel" onclick="closeModal()">ОТМЕНА</button>
+            <button class="modal-btn btn-confirm" onclick="confirmChangeId()">ДА, СМЕНИТЬ</button>
+        </div>
+    </div>
+</div>
+
+<div class="screens-container">
+
+    <!-- 1. СТАРТ (ВВОД ID) -->
+    <div id="screen-start" class="screen active">
+        <div style="margin-top: 20px;">
+            <div class="guide-box" style="border-left: 4px solid var(--pink-1win);">
+                <h3 style="margin-bottom: 10px;">⚠️ ДОСТУП ОГРАНИЧЕН</h3>
+                <p style="font-size: 13px; color: var(--text-gray); line-height: 1.5;">
+                    Сигналы доступны только для игроков с активным ID на 1WIN.
+                </p>
+            </div>
+            
+            <div class="guide-box">
+                <div style="font-size: 14px; font-weight: 700; margin-bottom: 10px;">1. Регистрация аккаунта</div>
+                <a href="https://lkhv.cc/94eec9" target="_blank" style="display: block; background: #0f192b; color: white; text-align: center; padding: 12px; border-radius: 10px; text-decoration: none; font-weight: 700; border: 1px solid #333;">
+                    🔗 Перейти в 1WIN
+                </a>
+                <div style="margin-top: 15px; font-size: 14px; font-weight: 700;">2. Введите промокод:</div>
+                <div class="code-bg">Sawz500</div>
+            </div>
+
+            <div class="id-section">
+                <div class="id-label">3. Введите ваш ID</div>
+                <input type="tel" id="userIdInput" class="id-input" placeholder="00000000" maxlength="13">
+                <div style="font-size: 10px; color: #666; margin-top: 5px;">Только цифры. Без ввода ID доступ закрыт.</div>
+            </div>
+
+            <button class="main-btn" onclick="completeStart()">ВОЙТИ В СИСТЕМУ</button>
+        </div>
+    </div>
+
+    <!-- 2. МЕНЮ ИГР -->
+    <div id="screen-home" class="screen">
+        <div class="games-grid">
+            <div class="game-card" onclick="openGame('mines')">
+                <div class="g-icon">💣</div><div class="g-title">МИНЫ</div>
+            </div>
+            <div class="game-card" onclick="openGame('lucky')">
+                <div class="g-icon">🚀</div><div class="g-title">ЛАКИ ДЖЕТ</div>
+            </div>
+            <div class="game-card" onclick="openGame('penalty')">
+                <div class="g-icon">⚽</div><div class="g-title">ПЕНАЛЬТИ</div>
+            </div>
+            <div class="game-card" onclick="openGame('coin')">
+                <div class="g-icon">🪙</div><div class="g-title">ОРЕЛ И РЕШКА</div>
+            </div>
+            <div class="game-card" onclick="openGame('tower')">
+                <div class="g-icon">🏢</div><div class="g-title">TOWER RUSH</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. ПРОФИЛЬ -->
+    <div id="screen-profile" class="screen">
+        <div class="game-ui" style="text-align: center;">
+            <div style="width: 80px; height: 80px; background: var(--blue-1win); border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 30px;">👤</div>
+            <h2 id="uName">Игрок</h2>
+            
+            <div style="font-size: 16px; color: var(--blue-1win); margin-top: 5px; font-family: monospace; background: rgba(0,0,0,0.3); display: inline-flex; align-items: center; padding: 8px 15px; border-radius: 8px; border: 1px solid var(--blue-1win);">
+                ID: <span id="uId" style="margin-right: 10px;">...</span>
+                <button class="change-id-btn" onclick="openModal()">Изменить</button>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px;">
+                <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px;">
+                    <div style="font-size: 24px; font-weight: 900; color: var(--pink-1win);" id="sigCount">0</div>
+                    <div style="font-size: 10px; color: var(--text-gray);">СИГНАЛЫ</div>
+                </div>
+                <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px;">
+                    <div style="font-size: 24px; font-weight: 900; color: #10b981;">VIP</div>
+                    <div style="font-size: 10px; color: var(--text-gray);">СТАТУС</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. ИНСТРУКЦИЯ (TAB) -->
+    <div id="screen-instructions" class="screen">
+        <div style="margin-top: 20px;">
+            <div class="guide-box">
+                <p style="font-size: 13px; color: var(--text-gray); line-height: 1.5;">
+                    Официальная ссылка:
+                </p>
+                <a href="https://lkhv.cc/94eec9" target="_blank" style="display: block; background: #0f192b; color: var(--blue-1win); text-align: center; padding: 12px; border-radius: 10px; text-decoration: none; font-weight: 700; margin-top: 10px; border: 1px solid #333;">
+                    https://lkhv.cc/94eec9
+                </a>
+            </div>
+            <div class="guide-box">
+                <p style="font-size: 13px; color: var(--text-gray);">Промокод:</p>
+                <div class="code-bg">Sawz500</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ИГРА: МИНЫ -->
+    <div id="game-mines" class="screen">
+        <div class="game-ui">
+            <div class="mines-options">
+                <button class="mine-btn" onclick="setMines(1, this)">1</button>
+                <button class="mine-btn active" onclick="setMines(3, this)">3</button>
+                <button class="mine-btn" onclick="setMines(5, this)">5</button>
+                <button class="mine-btn" onclick="setMines(7, this)">7</button>
+            </div>
+            <div class="mines-wrapper" id="minesGrid"></div>
+            <div class="status-text" id="minesStatus">Нажми кнопку для сигнала</div>
+            <div class="loader-container" id="loaderMines"><div class="spinner"></div></div>
+            <button class="main-btn" id="btnMines" onclick="runMines()">ПОЛУЧИТЬ СИГНАЛ</button>
+            <div style="text-align: center; margin-top: 15px; font-size: 12px; opacity: 0.5; cursor: pointer;" onclick="goHome()">← В МЕНЮ</div>
+        </div>
+    </div>
+
+    <!-- ИГРА: ЛАКИ ДЖЕТ -->
+    <div id="game-lucky" class="screen">
+        <div class="game-ui">
+            <div class="lucky-wrapper">
+                <div class="star-field"></div>
+                <div class="jet-container" id="jetCont">
+                    <div class="jet-trail"></div>
+                    <div class="joe">🚀</div>
+                </div>
+                <div class="multiplier" id="luckyNum">x1.00</div>
+            </div>
+            <div class="status-text" id="luckyStatus">Ожидание...</div>
+            <div class="loader-container" id="loaderLucky"><div class="spinner"></div></div>
+            <button class="main-btn" id="btnLucky" onclick="runLucky()">ПОЛУЧИТЬ СИГНАЛ</button>
+            <div style="text-align: center; margin-top: 15px; font-size: 12px; opacity: 0.5; cursor: pointer;" onclick="goHome()">← В МЕНЮ</div>
+        </div>
+    </div>
+
+    <!-- ИГРА: ПЕНАЛЬТИ -->
+    <div id="game-penalty" class="screen">
+        <div class="game-ui">
+            <div class="penalty-wrapper">
+                <div class="net"></div>
+                <div class="penalty-grid" id="penGrid"></div>
+            </div>
+            <div class="status-text" id="penStatus">Выбери ячейку для удара</div>
+            <div class="loader-container" id="loaderPen"><div class="spinner"></div></div>
+            <button class="main-btn" id="btnPen" onclick="runPenalty()">ПОЛУЧИТЬ СИГНАЛ</button>
+            <div style="text-align: center; margin-top: 15px; font-size: 12px; opacity: 0.5; cursor: pointer;" onclick="goHome()">← В МЕНЮ</div>
+        </div>
+    </div>
+
+    <!-- ИГРА: КОИН ФЛИП -->
+    <div id="game-coin" class="screen">
+        <div class="game-ui">
+            <div class="coin-scene">
+                <div class="coin" id="theCoin">
+                    <div class="side heads"><div class="coin-text">1win</div></div>
+                    <div class="side tails">1</div>
+                </div>
+            </div>
+            <div class="status-text" id="coinStatus" style="font-size: 18px; font-weight: bold; margin-top: 20px;">-</div>
+            <div class="loader-container" id="loaderCoin"><div class="spinner"></div></div>
+            <button class="main-btn" id="btnCoin" onclick="runCoin()">ПОЛУЧИТЬ СИГНАЛ</button>
+            <div style="text-align: center; margin-top: 15px; font-size: 12px; opacity: 0.5; cursor: pointer;" onclick="goHome()">← В МЕНЮ</div>
+        </div>
+    </div>
+
+    <!-- ИГРА: TOWER RUSH -->
+    <div id="game-tower" class="screen">
+        <div class="game-ui">
+            <div class="tower-wrapper" id="towerWrap">
+                <div class="tower-result" id="towerNum">0</div>
+                <div class="tower-ground"></div>
+            </div>
+            <div class="status-text" id="towerStatus">Нажми для прогноза этажей</div>
+            <div class="loader-container" id="loaderTower"><div class="spinner"></div></div>
+            <button class="main-btn" id="btnTower" onclick="runTower()">ПОЛУЧИТЬ СИГНАЛ</button>
+            <div style="text-align: center; margin-top: 15px; font-size: 12px; opacity: 0.5; cursor: pointer;" onclick="goHome()">← В МЕНЮ</div>
+        </div>
+    </div>
+
+</div>
+
+<!-- НАВИГАЦИЯ -->
+<div class="nav" id="navBar" style="display: none;">
+    <div class="nav-item active" onclick="navTo('screen-home')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+        <span>Игры</span>
+    </div>
+    <div class="nav-item" onclick="navTo('screen-profile')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        <span>Профиль</span>
+    </div>
+    <div class="nav-item" onclick="navTo('screen-instructions')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+        <span>Инструкция</span>
+    </div>
+</div>
+
+<script>
+    // --- TELEGRAM INIT & USER ID LOGIC ---
+    if (window.Telegram && window.Telegram.WebApp) {
+        window.Telegram.WebApp.ready();
+        window.Telegram.WebApp.expand();
+        window.Telegram.WebApp.setHeaderColor('#0f192b'); 
+        window.Telegram.WebApp.setBackgroundColor('#0f192b');
+    }
+
+    // Получаем Telegram User ID для уникальности хранилища
+    let tgUserId = 'guest';
+    if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
+        tgUserId = window.Telegram.WebApp.initDataUnsafe.user.id;
+    }
+
+    // Ключи хранилища с привязкой к TG ID
+    const KEY_VER = `v7_ver_${tgUserId}`;
+    const KEY_ID = `v7_id_${tgUserId}`;
+    const KEY_SIG = `v7_sig_${tgUserId}`;
+
+    // Данные
+    const APP = {
+        verified: localStorage.getItem(KEY_VER) === 'true',
+        id: localStorage.getItem(KEY_ID) || null, 
+        name: (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) 
+              ? window.Telegram.WebApp.initDataUnsafe.user.first_name 
+              : 'Player',
+        signals: parseInt(localStorage.getItem(KEY_SIG) || '0'),
+        currentMines: 3
+    };
+
+    // --- INIT ---
+    window.onload = () => {
+        initMinesGrid();
+        initPenaltyGrid();
+        
+        if(!APP.verified || !APP.id) {
+            showScreen('screen-start');
+        } else {
+            updateProfile();
+            showScreen('screen-home');
+            document.getElementById('navBar').style.display = 'flex';
+        }
+    };
+
+    // --- NAVIGATION ---
+    function showScreen(id) {
+        document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        if(id === 'screen-home') document.querySelectorAll('.nav-item')[0].classList.add('active');
+        if(id === 'screen-profile') document.querySelectorAll('.nav-item')[1].classList.add('active');
+        if(id === 'screen-instructions') document.querySelectorAll('.nav-item')[2].classList.add('active');
+    }
+    function navTo(page) { showScreen(page); }
+    function openGame(game) { showScreen('game-' + game); }
+    function goHome() { showScreen('screen-home'); }
+    
+    // --- AUTHENTICATION ---
+    function completeStart() {
+        const input = document.getElementById('userIdInput');
+        const val = input.value.trim();
+        
+        const isValid = /^\d{5,13}$/.test(val);
+
+        if (!isValid) {
+            input.classList.add('error');
+            setTimeout(() => input.classList.remove('error'), 500);
+            if(window.Telegram.WebApp && window.Telegram.WebApp.showAlert) {
+                window.Telegram.WebApp.showAlert("Ошибка! Введите корректный ID (только цифры, 5-13 символов).");
+            } else {
+                alert("Ошибка! Введите корректный ID (только цифры, 5-13 символов).");
+            }
+            return;
+        }
+
+        APP.verified = true;
+        APP.id = val;
+        localStorage.setItem(KEY_VER, 'true');
+        localStorage.setItem(KEY_ID, APP.id);
+        
+        updateProfile();
+        document.getElementById('navBar').style.display = 'flex';
+        showScreen('screen-home');
+    }
+
+    // --- CUSTOM MODAL FOR ID CHANGE ---
+    function openModal() {
+        document.getElementById('confirm-modal').style.display = 'flex';
+    }
+    
+    function closeModal() {
+        document.getElementById('confirm-modal').style.display = 'none';
+    }
+
+    function confirmChangeId() {
+        closeModal();
+        localStorage.removeItem(KEY_VER);
+        localStorage.removeItem(KEY_ID);
+        APP.verified = false;
+        APP.id = null;
+        document.getElementById('navBar').style.display = 'none';
+        document.getElementById('userIdInput').value = '';
+        showScreen('screen-start');
+    }
+
+    function updateProfile() {
+        document.getElementById('uName').innerText = APP.name;
+        document.getElementById('uId').innerText = APP.id || '???';
+        document.getElementById('sigCount').innerText = APP.signals;
+    }
+    function addSignal() {
+        APP.signals++;
+        localStorage.setItem(KEY_SIG, APP.signals);
+        updateProfile();
+    }
+    function getRandomDelay() { return Math.floor(Math.random() * 4000) + 3000; }
+
+    function startLoading(btnId, loaderId, statusId) {
+        document.getElementById(btnId).style.display = 'none';
+        document.getElementById(loaderId).style.display = 'flex';
+        document.getElementById(statusId).innerText = 'ПОЛУЧЕНИЕ СИГНАЛА...';
+    }
+    function stopLoading(btnId, loaderId, statusId, msg) {
+        document.getElementById(loaderId).style.display = 'none';
+        document.getElementById(btnId).style.display = 'block';
+        document.getElementById(statusId).innerText = msg || 'Сигнал получен';
+    }
+
+    // --- GAMES LOGIC ---
+    function setMines(count, btn) {
+        APP.currentMines = count;
+        document.querySelectorAll('.mine-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        resetMinesGrid();
+    }
+    function resetMinesGrid() {
+        document.querySelectorAll('.mine-cell').forEach(c => { c.className = 'mine-cell'; c.innerHTML = ''; });
+    }
+    function initMinesGrid() {
+        const grid = document.getElementById('minesGrid');
+        grid.innerHTML = ''; for(let i=0; i<25; i++) grid.innerHTML += `<div class="mine-cell" id="m-${i}"></div>`;
+    }
+    function runMines() {
+        startLoading('btnMines', 'loaderMines', 'minesStatus');
+        resetMinesGrid();
+        setTimeout(() => {
+            let safeCount = 4;
+            if (APP.currentMines === 1) safeCount = 6;
+            if (APP.currentMines === 5) safeCount = 3;
+            if (APP.currentMines === 7) safeCount = 2;
+            const safeSpots = new Set();
+            while(safeSpots.size < safeCount) safeSpots.add(Math.floor(Math.random() * 25));
+            const spots = Array.from(safeSpots);
+            let i = 0;
+            const reveal = setInterval(() => {
+                const cell = document.getElementById(`m-${spots[i]}`);
+                cell.classList.add('safe'); cell.innerHTML = '<div class="star-icon">⭐</div>';
+                i++;
+                if(i >= spots.length) { clearInterval(reveal); stopLoading('btnMines', 'loaderMines', 'minesStatus'); addSignal(); }
+            }, 300);
+        }, getRandomDelay());
+    }
+
+    function runLucky() {
+        startLoading('btnLucky', 'loaderLucky', 'luckyStatus');
+        const jet = document.getElementById('jetCont'); const num = document.getElementById('luckyNum');
+        jet.style.transition = 'none'; jet.style.left = '20px'; jet.style.bottom = '20px';
+        num.innerText = 'x1.00'; num.style.color = 'white';
+        setTimeout(() => {
+            jet.style.transition = 'all 2s ease-out'; jet.style.left = '60%'; jet.style.bottom = '120px';
+            let current = 1.00; let target; const r = Math.random();
+            if(r < 0.6) target = (Math.random() * (1.9 - 1.2) + 1.2).toFixed(2);
+            else if (r < 0.85) target = (Math.random() * (3.5 - 2.0) + 2.0).toFixed(2);
+            else target = (Math.random() * (12.0 - 5.0) + 5.0).toFixed(2);
+            const timer = setInterval(() => {
+                current += 0.03;
+                if(current >= target) {
+                    current = target; clearInterval(timer);
+                    stopLoading('btnLucky', 'loaderLucky', 'luckyStatus');
+                    if(target < 2) num.style.color = '#0099ff'; else if(target < 5) num.style.color = '#f53b7b'; else num.style.color = '#f59e0b';
+                    addSignal();
+                }
+                num.innerText = 'x' + parseFloat(current).toFixed(2);
+            }, 20);
+        }, getRandomDelay());
+    }
+
+    function initPenaltyGrid() {
+        const grid = document.getElementById('penGrid');
+        grid.innerHTML = ''; for(let i=0; i<15; i++) grid.innerHTML += `<div class="p-cell" id="p-${i}"></div>`;
+    }
+    function runPenalty() {
+        startLoading('btnPen', 'loaderPen', 'penStatus');
+        document.querySelectorAll('.p-cell').forEach(c => c.innerHTML = '');
+        setTimeout(() => {
+            const corners = [0, 4, 10, 14, 2, 12];
+            const target = corners[Math.floor(Math.random() * corners.length)];
+            const cell = document.getElementById(`p-${target}`);
+            cell.innerHTML = '<div class="ball"></div>';
+            stopLoading('btnPen', 'loaderPen', 'penStatus', 'Бей в эту зону');
+            addSignal();
+        }, getRandomDelay());
+    }
+
+    let totalRot = 0;
+    function runCoin() {
+        const status = document.getElementById('coinStatus'); const coin = document.getElementById('theCoin');
+        startLoading('btnCoin', 'loaderCoin', 'coinStatus');
+        status.style.color = "white";
+        setTimeout(() => {
+            document.getElementById('loaderCoin').style.display = 'none';
+            status.innerText = 'ВРАЩЕНИЕ...';
+            const isHeads = Math.random() > 0.5;
+            let nextRot = totalRot + 1800; 
+            const remainder = nextRot % 360;
+            if (isHeads) nextRot += (360 - remainder); else nextRot += (180 - remainder) + 360; 
+            totalRot = nextRot;
+            coin.style.transition = 'transform 3s cubic-bezier(0.2, 0.8, 0.2, 1.1)';
+            coin.style.transform = `rotateY(${totalRot}deg)`;
+            setTimeout(() => {
+                document.getElementById('btnCoin').style.display = 'block';
+                addSignal();
+                if(isHeads) { status.innerText = "1WIN (ОРЁЛ)"; status.style.color = "var(--blue-1win)"; } 
+                else { status.innerText = "РЕШКА"; status.style.color = "#f59e0b"; }
+            }, 3000);
+        }, getRandomDelay());
+    }
+
+    function runTower() {
+        startLoading('btnTower', 'loaderTower', 'towerStatus');
+        const container = document.getElementById('towerWrap');
+        const resultNum = document.getElementById('towerNum');
+        
+        const oldFloors = container.querySelectorAll('.tower-floor, .tower-roof');
+        oldFloors.forEach(f => f.remove());
+        resultNum.style.display = 'none';
+
+        setTimeout(() => {
+            const floorsCount = Math.floor(Math.random() * (20 - 3 + 1)) + 3;
+            document.getElementById('loaderTower').style.display = 'none';
+            document.getElementById('towerStatus').innerText = 'СТРОИТЕЛЬСТВО...';
+            
+            let current = 0;
+            const buildInterval = setInterval(() => {
+                const floor = document.createElement('div');
+                floor.className = 'tower-floor';
+                const styles = ['style-concrete', 'style-brick', 'style-tech'];
+                floor.classList.add(styles[Math.floor(Math.random() * styles.length)]);
+
+                const winDiv = document.createElement('div');
+                winDiv.className = 'windows';
+                for(let k=0; k<4; k++) {
+                    const w = document.createElement('div'); w.className = 'win';
+                    if(Math.random() > 0.3) w.classList.add('lit');
+                    winDiv.appendChild(w);
+                }
+                floor.appendChild(winDiv);
+                container.appendChild(floor);
+                
+                current++;
+                if (current >= floorsCount) {
+                    clearInterval(buildInterval);
+                    const roof = document.createElement('div'); roof.className = 'tower-roof';
+                    container.appendChild(roof);
+                    resultNum.innerText = floorsCount; resultNum.style.display = 'block';
+                    document.getElementById('btnTower').style.display = 'block';
+                    document.getElementById('towerStatus').innerText = 'Безопасно этажей: ' + floorsCount;
+                    addSignal();
+                }
+            }, 150);
+        }, getRandomDelay());
+    }
+</script>
+</body>
+</html>
