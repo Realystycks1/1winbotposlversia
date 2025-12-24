@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>1WIN SIGNALS FINAL V7</title>
+<title>1WIN SIGNALS FINAL V8</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -75,34 +75,34 @@
     }
     .change-id-btn:active { background: rgba(255,255,255,0.1); }
 
-    /* МОДАЛЬНОЕ ОКНО (CUSTOM CONFIRM) */
+    /* --- МОДАЛЬНОЕ ОКНО (КРАСИВОЕ, ВМЕСТО СИСТЕМНОГО) --- */
     .modal-overlay {
         position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0, 0, 0, 0.8); z-index: 200;
+        background: rgba(0, 0, 0, 0.85); z-index: 9999;
         display: none; align-items: center; justify-content: center;
-        backdrop-filter: blur(5px);
+        backdrop-filter: blur(8px);
         animation: fadeIn 0.2s;
     }
     .modal-box {
         width: 85%; max-width: 320px;
-        background: var(--panel-bg);
-        border: 1px solid var(--blue-1win);
+        background: #1c283d;
+        border: 2px solid var(--blue-1win);
         border-radius: 20px;
         padding: 25px;
         text-align: center;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        box-shadow: 0 0 50px rgba(0, 153, 255, 0.3);
         transform: scale(0.9);
         animation: popIn 0.2s forwards;
     }
-    .modal-title { font-size: 18px; font-weight: 900; color: white; margin-bottom: 10px; }
-    .modal-desc { font-size: 13px; color: var(--text-gray); margin-bottom: 20px; line-height: 1.5; }
+    .modal-title { font-size: 20px; font-weight: 900; color: white; margin-bottom: 10px; font-style: italic; }
+    .modal-desc { font-size: 14px; color: #ccc; margin-bottom: 25px; line-height: 1.5; font-weight: 500; }
     .modal-actions { display: flex; gap: 10px; }
     .modal-btn {
-        flex: 1; padding: 12px; border-radius: 10px; border: none;
-        font-weight: 700; font-size: 13px; cursor: pointer;
+        flex: 1; padding: 14px; border-radius: 12px; border: none;
+        font-weight: 800; font-size: 12px; cursor: pointer; text-transform: uppercase;
     }
-    .btn-cancel { background: rgba(255,255,255,0.1); color: white; }
-    .btn-confirm { background: var(--pink-1win); color: white; }
+    .btn-cancel { background: #2c3e50; color: #fff; }
+    .btn-confirm { background: linear-gradient(90deg, #f53b7b, #d6306d); color: white; box-shadow: 0 5px 15px rgba(245, 59, 123, 0.4); }
 
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
@@ -214,11 +214,11 @@
     <div class="logo">1WIN <span>SIGNALS</span></div>
 </div>
 
-<!-- МОДАЛЬНОЕ ОКНО ДЛЯ СМЕНЫ ID -->
+<!-- НОВОЕ КРАСИВОЕ МОДАЛЬНОЕ ОКНО -->
 <div id="confirm-modal" class="modal-overlay">
     <div class="modal-box">
         <div class="modal-title">СМЕНА ID</div>
-        <p class="modal-desc">Вы уверены, что хотите выйти? <br>Текущий ID будет сброшен.</p>
+        <p class="modal-desc">Вы действительно хотите изменить ID?<br>Текущая сессия будет сброшена.</p>
         <div class="modal-actions">
             <button class="modal-btn btn-cancel" onclick="closeModal()">ОТМЕНА</button>
             <button class="modal-btn btn-confirm" onclick="confirmChangeId()">ДА, СМЕНИТЬ</button>
@@ -284,6 +284,7 @@
             <div style="width: 80px; height: 80px; background: var(--blue-1win); border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 30px;">👤</div>
             <h2 id="uName">Игрок</h2>
             
+            <!-- КНОПКА ОТКРЫВАЕТ НАШЕ МОДАЛЬНОЕ ОКНО -->
             <div style="font-size: 16px; color: var(--blue-1win); margin-top: 5px; font-family: monospace; background: rgba(0,0,0,0.3); display: inline-flex; align-items: center; padding: 8px 15px; border-radius: 8px; border: 1px solid var(--blue-1win);">
                 ID: <span id="uId" style="margin-right: 10px;">...</span>
                 <button class="change-id-btn" onclick="openModal()">Изменить</button>
@@ -426,18 +427,15 @@
         window.Telegram.WebApp.setBackgroundColor('#0f192b');
     }
 
-    // Получаем Telegram User ID для уникальности хранилища
     let tgUserId = 'guest';
     if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
         tgUserId = window.Telegram.WebApp.initDataUnsafe.user.id;
     }
 
-    // Ключи хранилища с привязкой к TG ID
     const KEY_VER = `v7_ver_${tgUserId}`;
     const KEY_ID = `v7_id_${tgUserId}`;
     const KEY_SIG = `v7_sig_${tgUserId}`;
 
-    // Данные
     const APP = {
         verified: localStorage.getItem(KEY_VER) === 'true',
         id: localStorage.getItem(KEY_ID) || null, 
@@ -503,7 +501,7 @@
         showScreen('screen-home');
     }
 
-    // --- CUSTOM MODAL FOR ID CHANGE ---
+    // --- MODAL LOGIC (CUSTOM) ---
     function openModal() {
         document.getElementById('confirm-modal').style.display = 'flex';
     }
@@ -512,8 +510,9 @@
         document.getElementById('confirm-modal').style.display = 'none';
     }
 
+    // Эта функция вызывается кнопкой "ДА" в модальном окне
     function confirmChangeId() {
-        closeModal();
+        closeModal(); // Закрываем модалку
         localStorage.removeItem(KEY_VER);
         localStorage.removeItem(KEY_ID);
         APP.verified = false;
