@@ -75,16 +75,16 @@
     }
     .change-id-btn:active { background: rgba(255,255,255,0.1); }
 
-    /* --- МОДАЛЬНОЕ ОКНО (КРАСИВОЕ, ВМЕСТО СИСТЕМНОГО) --- */
+    /* --- МОДАЛЬНОЕ ОКНО ОБЩЕЕ --- */
     .modal-overlay {
         position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0, 0, 0, 0.85); z-index: 9999;
+        background: rgba(0, 0, 0, 0.95); z-index: 9999; /* Фон темнее */
         display: none; align-items: center; justify-content: center;
-        backdrop-filter: blur(8px);
+        backdrop-filter: blur(10px);
         animation: fadeIn 0.2s;
     }
     .modal-box {
-        width: 85%; max-width: 320px;
+        width: 90%; max-width: 340px;
         background: #1c283d;
         border: 2px solid var(--blue-1win);
         border-radius: 20px;
@@ -94,15 +94,71 @@
         transform: scale(0.9);
         animation: popIn 0.2s forwards;
     }
-    .modal-title { font-size: 20px; font-weight: 900; color: white; margin-bottom: 10px; font-style: italic; }
+    .modal-title { font-size: 22px; font-weight: 900; color: white; margin-bottom: 10px; font-style: italic; }
     .modal-desc { font-size: 14px; color: #ccc; margin-bottom: 25px; line-height: 1.5; font-weight: 500; }
+    
+    /* СТИЛИ ДЛЯ СТАРТОВОГО ВАЖНОГО ОКНА */
+    .warning-big {
+        color: var(--pink-1win);
+        font-size: 26px; /* ОЧЕНЬ БОЛЬШОЙ ТЕКСТ */
+        font-weight: 900;
+        text-transform: uppercase;
+        margin-bottom: 15px;
+        line-height: 1.1;
+        text-shadow: 0 0 20px rgba(245, 59, 123, 0.5);
+    }
+    .warning-desc {
+        font-size: 15px;
+        color: white;
+        margin-bottom: 20px;
+        line-height: 1.4;
+    }
+    
+    /* ГАЛОЧКА (CHECKBOX) */
+    .checkbox-container {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        background: rgba(0,0,0,0.3);
+        padding: 12px;
+        border-radius: 12px;
+        margin-bottom: 15px;
+        border: 1px solid rgba(255,255,255,0.1);
+        text-align: left;
+    }
+    .custom-checkbox {
+        width: 24px;
+        height: 24px;
+        min-width: 24px; /* Чтобы не сжимался */
+        accent-color: var(--blue-1win);
+        cursor: pointer;
+        margin-top: 2px;
+    }
+    .checkbox-label {
+        font-size: 12px;
+        color: var(--text-white);
+        font-weight: 700;
+        cursor: pointer;
+        line-height: 1.3;
+    }
+
     .modal-actions { display: flex; gap: 10px; }
     .modal-btn {
         flex: 1; padding: 14px; border-radius: 12px; border: none;
         font-weight: 800; font-size: 12px; cursor: pointer; text-transform: uppercase;
+        transition: 0.3s;
     }
     .btn-cancel { background: #2c3e50; color: #fff; }
     .btn-confirm { background: linear-gradient(90deg, #f53b7b, #d6306d); color: white; box-shadow: 0 5px 15px rgba(245, 59, 123, 0.4); }
+    
+    /* Кнопка продолжить (disabled состояние) */
+    .btn-start-disabled {
+        background: #444; color: #888; cursor: not-allowed; box-shadow: none;
+    }
+    .btn-start-active {
+        background: linear-gradient(90deg, #0099ff, #0066cc); color: white;
+        box-shadow: 0 0 20px rgba(0, 153, 255, 0.4);
+    }
 
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
@@ -214,7 +270,31 @@
     <div class="logo">1WIN <span>SIGNALS</span></div>
 </div>
 
-<!-- НОВОЕ КРАСИВОЕ МОДАЛЬНОЕ ОКНО -->
+<!-- 1. НОВОЕ СТАРТОВОЕ ОКНО ПРЕДУПРЕЖДЕНИЯ (ВСПЛЫВАЕТ СРАЗУ) -->
+<div id="start-warning-modal" class="modal-overlay">
+    <div class="modal-box" style="border-color: var(--pink-1win);">
+        <div class="warning-big">⚠️ ВАЖНО!</div>
+        <p class="warning-desc">
+            Если аккаунт зарегистрирован не по ссылке ниже или без промокода, <span style="color:var(--pink-1win); font-weight:bold;">БОТ БУДЕТ ВЫДАВАТЬ ОШИБКИ!</span>
+        </p>
+        
+        <a href="https://lkhv.cc/94eec9" target="_blank" style="display: block; background: #0f192b; color: white; text-align: center; padding: 12px; border-radius: 10px; text-decoration: none; font-weight: 700; border: 1px solid #333; margin-bottom: 10px;">
+            🔗 Ссылка 1WIN
+        </a>
+        <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 10px; font-family: monospace; letter-spacing: 2px; color: var(--blue-1win); font-weight: 900; margin-bottom: 15px; border: 1px dashed var(--blue-1win);">
+            Sawz500
+        </div>
+
+        <div class="checkbox-container">
+            <input type="checkbox" id="reg-check" class="custom-checkbox" onchange="checkAgreement()">
+            <label for="reg-check" class="checkbox-label">Я зарегистрировался по ссылке и ввел промокод</label>
+        </div>
+
+        <button id="btn-start-confirm" class="modal-btn btn-start-disabled" disabled onclick="closeStartWarning()">ПРОДОЛЖИТЬ</button>
+    </div>
+</div>
+
+<!-- 2. МОДАЛЬНОЕ ОКНО ДЛЯ СМЕНЫ ID -->
 <div id="confirm-modal" class="modal-overlay">
     <div class="modal-box">
         <div class="modal-title">СМЕНА ID</div>
@@ -228,36 +308,28 @@
 
 <div class="screens-container">
 
-    <!-- 1. СТАРТ (ВВОД ID) -->
+    <!-- 3. ЭКРАН ВВОДА ID (ПОЯВЛЯЕТСЯ ПОСЛЕ ГАЛОЧКИ) -->
     <div id="screen-start" class="screen active">
         <div style="margin-top: 20px;">
-            <div class="guide-box" style="border-left: 4px solid var(--pink-1win);">
-                <h3 style="margin-bottom: 10px;">⚠️ ДОСТУП ОГРАНИЧЕН</h3>
-                <p style="font-size: 13px; color: var(--text-gray); line-height: 1.5;">
-                    Сигналы доступны только для игроков с активным ID на 1WIN.
+            <!-- Краткая напоминалка -->
+            <div class="guide-box" style="border-left: 4px solid var(--blue-1win);">
+                <div style="font-size: 14px; font-weight: 700; margin-bottom: 5px;">Введите ваш ID</div>
+                <p style="font-size: 12px; color: var(--text-gray);">
+                    Убедитесь, что вы выполнили условия регистрации.
                 </p>
-            </div>
-            
-            <div class="guide-box">
-                <div style="font-size: 14px; font-weight: 700; margin-bottom: 10px;">1. Регистрация аккаунта</div>
-                <a href="https://lkhv.cc/94eec9" target="_blank" style="display: block; background: #0f192b; color: white; text-align: center; padding: 12px; border-radius: 10px; text-decoration: none; font-weight: 700; border: 1px solid #333;">
-                    🔗 Перейти в 1WIN
-                </a>
-                <div style="margin-top: 15px; font-size: 14px; font-weight: 700;">2. Введите промокод:</div>
-                <div class="code-bg">Sawz500</div>
             </div>
 
             <div class="id-section">
-                <div class="id-label">3. Введите ваш ID</div>
+                <div class="id-label">ВАШ ID C 1WIN</div>
                 <input type="tel" id="userIdInput" class="id-input" placeholder="00000000" maxlength="13">
-                <div style="font-size: 10px; color: #666; margin-top: 5px;">Только цифры. Без ввода ID доступ закрыт.</div>
+                <div style="font-size: 10px; color: #666; margin-top: 5px;">Только цифры.</div>
             </div>
 
             <button class="main-btn" onclick="completeStart()">ВОЙТИ В СИСТЕМУ</button>
         </div>
     </div>
 
-    <!-- 2. МЕНЮ ИГР -->
+    <!-- 4. МЕНЮ ИГР -->
     <div id="screen-home" class="screen">
         <div class="games-grid">
             <div class="game-card" onclick="openGame('mines')">
@@ -278,13 +350,12 @@
         </div>
     </div>
 
-    <!-- 3. ПРОФИЛЬ -->
+    <!-- 5. ПРОФИЛЬ -->
     <div id="screen-profile" class="screen">
         <div class="game-ui" style="text-align: center;">
             <div style="width: 80px; height: 80px; background: var(--blue-1win); border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 30px;">👤</div>
             <h2 id="uName">Игрок</h2>
             
-            <!-- КНОПКА ОТКРЫВАЕТ НАШЕ МОДАЛЬНОЕ ОКНО -->
             <div style="font-size: 16px; color: var(--blue-1win); margin-top: 5px; font-family: monospace; background: rgba(0,0,0,0.3); display: inline-flex; align-items: center; padding: 8px 15px; border-radius: 8px; border: 1px solid var(--blue-1win);">
                 ID: <span id="uId" style="margin-right: 10px;">...</span>
                 <button class="change-id-btn" onclick="openModal()">Изменить</button>
@@ -303,12 +374,15 @@
         </div>
     </div>
 
-    <!-- 4. ИНСТРУКЦИЯ (TAB) -->
+    <!-- 6. ИНСТРУКЦИЯ (TAB) -->
     <div id="screen-instructions" class="screen">
         <div style="margin-top: 20px;">
             <div class="guide-box">
+                <p style="font-size: 13px; color: var(--pink-1win); font-weight: bold; text-align: center; margin-bottom: 15px;">
+                    ⚠️ ВАЖНО: Если аккаунт зарегистрирован не по ссылке ниже или без промокода, бот будет выдавать ошибочные прогнозы.
+                </p>
                 <p style="font-size: 13px; color: var(--text-gray); line-height: 1.5;">
-                    Официальная ссылка:
+                    Официальная ссылка для корректной работы:
                 </p>
                 <a href="https://lkhv.cc/94eec9" target="_blank" style="display: block; background: #0f192b; color: var(--blue-1win); text-align: center; padding: 12px; border-radius: 10px; text-decoration: none; font-weight: 700; margin-top: 10px; border: 1px solid #333;">
                     https://lkhv.cc/94eec9
@@ -452,13 +526,35 @@
         initPenaltyGrid();
         
         if(!APP.verified || !APP.id) {
+            // Если не авторизован - показываем сначала СТАРТОВОЕ ПРЕДУПРЕЖДЕНИЕ
+            // А экран с вводом ID будет под ним
             showScreen('screen-start');
+            document.getElementById('start-warning-modal').style.display = 'flex';
         } else {
             updateProfile();
             showScreen('screen-home');
             document.getElementById('navBar').style.display = 'flex';
         }
     };
+    
+    // --- LOGIC FOR START WARNING ---
+    function checkAgreement() {
+        const chk = document.getElementById('reg-check');
+        const btn = document.getElementById('btn-start-confirm');
+        if (chk.checked) {
+            btn.disabled = false;
+            btn.classList.remove('btn-start-disabled');
+            btn.classList.add('btn-start-active');
+        } else {
+            btn.disabled = true;
+            btn.classList.add('btn-start-disabled');
+            btn.classList.remove('btn-start-active');
+        }
+    }
+    
+    function closeStartWarning() {
+        document.getElementById('start-warning-modal').style.display = 'none';
+    }
 
     // --- NAVIGATION ---
     function showScreen(id) {
@@ -519,7 +615,13 @@
         APP.id = null;
         document.getElementById('navBar').style.display = 'none';
         document.getElementById('userIdInput').value = '';
+        
+        // Сброс галочки и кнопки
+        document.getElementById('reg-check').checked = false;
+        checkAgreement(); 
+        
         showScreen('screen-start');
+        document.getElementById('start-warning-modal').style.display = 'flex'; // Снова показываем предупреждение
     }
 
     function updateProfile() {
